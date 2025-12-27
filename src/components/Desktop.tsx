@@ -47,16 +47,16 @@ export default function Desktop() {
 
   return (
     <div className="desktop">
-      <div className="sidebar">
-        <DesktopIcon img="/images/File.PNG" label="LINKEDIN.LNK" onClick={() => openWindow("linkedin")} />
-        <DesktopIcon img="/images/about.png" label="ABOUT.ME" onClick={() => openWindow("about")} />
+      <div className="iconbar">
+        <DesktopIcon img="/assets/images/finder-icon.png" label="LINKEDIN.LNK" onClick={() => openWindow("linkedin")} />
+        <DesktopIcon img="/assets/images/finder-icon.png" label="ABOUT.ME" onClick={() => openWindow("about")} />
         <DesktopIcon img="/images/cmd.JPG" label="SHELL.CMD" onClick={() => openWindow("terminal")} />
         <DesktopIcon img="/images/cmd.JPG" label="PHISHFISH.EXE" onClick={() => openWindow("phishfish")} />
       </div>
 
-      <div className="trash-icon" onClick={() => setConstruction(true)} role="button" tabIndex={0}>
+      <div className="trash" onClick={() => setConstruction(true)} role="button" tabIndex={0}>
         <img src="/images/trash.ico" alt="Recycle Bin" />
-        <div className="icon-label">Recycle Bin</div>
+        <div className="trash-label">Recycle Bin</div>
       </div>
 
       <Window

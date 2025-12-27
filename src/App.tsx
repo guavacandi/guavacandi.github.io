@@ -1,6 +1,14 @@
 import Desktop from "./components/Desktop";
-import "./App.css";
+
+import "./styles/system7.css";
+import "./styles/scrollbars.css";
+// optional:
+// import "./styles/calculator.css";
 
 export default function App() {
-  return <Desktop />;
+  return (
+    <div className="system7">
+      <Desktop />
+    </div>
+  );
 }

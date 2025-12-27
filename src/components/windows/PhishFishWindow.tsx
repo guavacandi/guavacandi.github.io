@@ -489,7 +489,7 @@ export default function PhishFishWindow() {
               ref={canvasRef}
               onClick={onCast}
               style={{
-                width: "106%",
+                width: "100%",
                 height: canvasSize.h,
                 borderRadius: 10,
                 border: `1px solid ${colors.border}`,

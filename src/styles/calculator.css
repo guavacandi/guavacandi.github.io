@@ -1,0 +1,153 @@
+.calculator-window {
+    width: 160px !important;
+    height: 255px !important;
+    resize: none !important;
+    border-radius: 8px;
+    background: #e0e0e0;
+    overflow: hidden !important;
+    position: fixed !important;  /* Override mobile positioning */
+    transform: none !important;  /* Prevent any transforms */
+    max-width: 160px !important;  /* Prevent responsive scaling */
+    min-width: 160px !important;  /* Ensure minimum width */
+}
+
+.calculator-window .window-content {
+    padding: 8px;
+    background: #d4d4d4;
+    border-radius: 0 0 8px 8px;
+    overflow: hidden !important;
+}
+
+.calculator {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.calculator-display {
+    background: #ffffff;
+    border: 1px solid #000000;
+    padding: 4px 8px;
+    text-align: right;
+    font-family: 'ChicagoFLF', monospace;
+    font-size: 18px;
+    height: 24px;
+    line-height: 24px;
+    margin-bottom: 4px;
+}
+
+.calculator-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    position: relative;
+}
+
+.calculator-button {
+    background: #ffffff;
+    border: 1px solid #000000;
+    text-align: center;
+    cursor: pointer;
+    font-family: 'ChicagoFLF', monospace;
+    font-size: 14px;
+    height: 28px;
+    line-height: 28px;
+    box-shadow: 1px 1px 0 #000000;
+    position: relative;
+    user-select: none;
+}
+
+/* Larger text for operators */
+.calculator-button[data-action="operator"] {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.calculator-button:active {
+    background: #000000;
+    color: #ffffff;
+    box-shadow: none;
+    transform: translate(1px, 1px);
+}
+
+.calculator-button.wide {
+    grid-column: span 2;
+}
+
+/* Absolutely positioned + button */
+.plus-button {
+    position: absolute !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: calc(25% - 3px) !important;
+    height: 60px !important;
+    line-height: 60px !important;
+    top: auto !important;
+    left: auto !important;
+}
+
+/* Titlebar styles */
+.system7 .calculator-window .window-titlebar {
+    border-radius: 8px 8px 0 0;
+    border-bottom: 1px solid #000000;
+    background: #000000 !important;
+    background-image: none !important;
+}
+
+.system7 .calculator-window .window-titlebar .window-title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    background: transparent !important;
+    color: #ffffff;
+    padding: 0 5px;
+}
+
+.system7 .calculator-window .window-titlebar.inactive {
+    background: #ffffff !important;
+    background-image: none !important;
+    --system7-titlebar-active: none !important;
+}
+
+.system7 .calculator-window .window-titlebar.inactive .window-title {
+    background: transparent !important;
+    color: #000000 !important;
+}
+
+.calculator-window .window-resizer {
+    display: none;
+}
+
+/* Remove scrollbars */
+.calculator-window::-webkit-scrollbar,
+.calculator-window .window-content::-webkit-scrollbar {
+    display: none;
+}
+
+.calculator-window {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Override the general mobile styles specifically for calculator */
+@media (max-width: 768px) {
+    .window:not(.calculator-window) {
+        width: calc(100% - 20px) !important;
+        height: calc(100% - 30px) !important;
+        top: 25px !important;
+        left: 10px !important;
+        resize: none;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    .calculator-window {
+        width: 160px !important;
+        height: 255px !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+}

@@ -7,9 +7,15 @@ type Props = {
 
 export default function DesktopIcon({ img, label, onClick, onDoubleClick }: Props) {
   return (
-    <div className="icon" onClick={onClick} onDoubleClick={onDoubleClick} role="button" tabIndex={0}>
+    <div
+      className="desktop-icon"
+      onClick={onClick}
+      onDoubleClick={onDoubleClick}
+      role="button"
+      tabIndex={0}
+    >
       <img src={img} alt={label} />
-      <div className="icon-label">{label}</div>
+      <div className="desktop-icon-label">{label}</div>
     </div>
   );
 }

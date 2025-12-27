@@ -61,21 +61,25 @@ export default function Window({
       onMouseDown={onFocus}
     >
       <div
-        className="title-bar"
+        className="window-titlebar"
         onMouseDown={(e) => {
           const target = e.target as HTMLElement;
-          if (target.closest(".window-controls")) return;
+          if (target.closest(".window-close")) return;
           onFocus();
           setDrag({ startX: e.clientX - pos.x, startY: e.clientY - pos.y });
         }}
       >
-        <span>{title}</span>
-        <div className="window-controls">
-          <div className="window-button close-button" onClick={onClose}>
-            ×
-          </div>
-        </div>
+        <div
+          className="window-close"
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose();
+          }}
+          title="Close"
+        />
+        <div className="window-title">{title}</div>
       </div>
+
 
       <div className="window-content" style={{ height: height ? `calc(${height}px - 35px)` : undefined }}>
         {children}
