@@ -1,419 +1,884 @@
+/* ===========================
+   System7.css (clean + Finder fixes)
+   =========================== */
+
+/* ---- Fonts ---- */
 @font-face {
-            font-family: 'ChicagoFLF';
-            src: url('/assets/fonts/ChicagoFLF.ttf') format('truetype');
-        }
+    font-family: "ChicagoFLF";
+    src: url("/assets/fonts/ChicagoFLF.ttf") format("truetype");
+  }
+  
+  @font-face {
+    font-family: "FindersKeepers";
+    src: url("/assets/fonts/FindersKeepers.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+  }
+  
+  /* ---- Theme vars ---- */
+  :root {
+    --system7-bg: #ffffff;
+    --system7-text: #000000;
+    --system7-window-bg: #ffffff;
+    --system7-border: #000000;
+    --system7-menubar-bg: #ffffff;
+  
+    --system7-titlebar-active: linear-gradient(
+      to bottom,
+      #d8d8d8 0%,
+      #d8d8d8 4px,
+      #000000 4px,
+      #000000 5px,
+      #d8d8d8 5px,
+      #d8d8d8 7px,
+      #000000 7px,
+      #000000 8px,
+      #d8d8d8 8px,
+      #d8d8d8 10px,
+      #000000 10px,
+      #000000 11px,
+      #d8d8d8 11px,
+      #d8d8d8 13px,
+      #000000 13px,
+      #000000 14px,
+      #d8d8d8 14px,
+      #d8d8d8 16px,
+      #000000 16px,
+      #000000 17px,
+      #d8d8d8 17px,
+      #d8d8d8 19px,
+      #000000 19px,
+      #000000 20px,
+      #d8d8d8 20px,
+      #d8d8d8 22px
+    );
+  
+    --system7-titlebar-inactive: #ffffff;
+  }
+  
+  /* ---- Base ---- */
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    height: 100vh;
+  }
+  
+  body {
+    font-family: "ChicagoFLF", -apple-system, sans-serif;
+    color: var(--system7-text);
+  }
+  
+  /* ===========================
+     App layout
+     =========================== */
+  
+  .system7 {
+    background-color: var(--system7-bg);
+    font-family: "ChicagoFLF", -apple-system, sans-serif;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  
+  /* ===========================
+     Menubar
+     =========================== */
+  
+  .menubar {
+    position: relative;
+    height: 22px;
+    background: var(--system7-menubar-bg);
+    border-bottom: 1px solid var(--system7-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0;
+    flex: 0 0 22px;
+    z-index: 1000;
+  }
+  
+  .menubar-left,
+  .menubar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .menubar-right {
+    margin-right: 10px;
+  }
+  
+  /* menubar button reset */
+  .menubar .menubar-item {
+    appearance: none;
+    -webkit-appearance: none;
+    border: 0;
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+  
+    height: 22px;
+    line-height: 22px;
+    padding: 0 8px;
+    margin: 0;
+  
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  
+    font: inherit;
+    color: inherit;
+    cursor: default;
+  }
+  
+  .menubar .menubar-item:hover,
+  .menubar .menubar-item.is-open {
+    background: #000;
+    color: #fff;
+  }
+  
+  .menu-icon {
+    width: 18px;
+    height: 18px;
+    display: block;
+    object-fit: none;
+    object-position: 6px 2px;
+  }
+  
+  .menubar-item img {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .clock {
+    padding: 0 10px;
+    color: var(--system7-text);
+    font-family: "ChicagoFLF", -apple-system, sans-serif;
+  }
+  
+  /* Apple icon */
+  .apple-icon {
+    width: 16px;
+    height: 16px;
+    display: block;
+    background: url("/assets/images/apple.png") no-repeat center;
+    background-size: contain;
+    image-rendering: pixelated;
+  }
+  
+  /* Dropdowns */
+  .dropdown-menu {
+    position: fixed;
+    min-width: 200px;
+    background: var(--system7-menubar-bg);
+    border: 1px solid var(--system7-border);
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+    padding: 2px 0;
+    z-index: 6000;
+    display: none;
+  }
+  
+  .dropdown-menu.open {
+    display: block;
+  }
+  
+  .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 20px;
+    white-space: nowrap;
+    cursor: default;
+  }
+  
+  .dropdown-item:hover {
+    background: #000;
+    color: #fff;
+  }
+  
+  .dropdown-divider {
+    height: 1px;
+    background: var(--system7-border);
+    margin: 2px 0;
+  }
+  
+  /* Application menu */
+  .app-menu {
+    padding: 2px 8px;
+    min-width: 24px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .app-menu .app-icon {
+    width: 16px;
+    height: 16px;
+    pointer-events: none;
+  }
+  
+  .app-menu .app-name {
+    display: block;
+  }
+  
+  /* ===========================
+     Desktop backgrounds
+     =========================== */
+  
+  .desktop {
+    flex: 1;
+    position: relative;
+    overflow: hidden !important;
+    background-size: cover;
+    padding-right: 20px;
+  }
+  
+  .desktop[data-bg="MacOS"] {
+    background: url("/assets/images/backgrounds/MacOS.jpg") no-repeat center center
+      fixed;
+    background-size: cover;
+  }
+  
+  .desktop[data-bg="cats"] {
+    background: url("/assets/images/backgrounds/cats.png") no-repeat center center
+      fixed;
+    background-size: cover;
+  }
+  
+  .desktop[data-bg="galaxy"] {
+    background: url("/assets/images/backgrounds/galaxy.png") no-repeat center center
+      fixed;
+    background-size: cover;
+  }
+  
+  .desktop[data-bg="flowers"] {
+    background: url("/assets/images/backgrounds/flowers.jpeg") no-repeat center
+      center fixed;
+    background-size: cover;
+  }
+  
+  .desktop[data-bg="lake"] {
+    background: url("/assets/images/backgrounds/lake.jpg") no-repeat center center
+      fixed;
+    background-size: cover;
+  }
+  
+  .desktop[data-bg="cyberpunk"] {
+    background: url("/assets/images/backgrounds/cyberpunk.jpg") no-repeat center
+      center fixed;
+    background-size: cover;
+  }
+  
+  /* ===========================
+     Windows
+     =========================== */
+  
+  .window {
+    position: absolute;
+    background: var(--system7-window-bg);
+    border: 1px solid var(--system7-border);
+    min-width: 200px;
+    min-height: 100px;
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+    resize: both;
+    overflow: hidden;
+    font-family: "ChicagoFLF", -apple-system, sans-serif;
+  }
+  
+  .window-titlebar {
+    background: var(--system7-titlebar-active);
+    color: white;
+    padding: 2px 5px;
+    cursor: move;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 20px;
+    position: relative;
+  }
+  
+  .window-title {
+    text-align: center;
+    flex-grow: 1;
+    background: #ffffff;
+    color: black;
+    padding: 0 5px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .window-titlebar.inactive .window-title {
+    background: #ffffff;
+  }
+  
+  .window-close {
+    width: 12px;
+    height: 12px;
+    border: 1px solid #000;
+    background: #fff;
+    cursor: pointer;
+    position: relative;
+  }
+  
+  .window-close:active {
+    background: #000;
+  }
+  
+  .window-content {
+    padding: 10px;
+    overflow: auto;
+    height: calc(100% - 42px);
+    position: relative;
+  }
+  
+  .window-content img {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  .window-content::-webkit-scrollbar-button:vertical:increment {
+    display: none;
+  }
+  
+  /* Calculator keeps its own sizing */
+  .calculator-window .window-content,
+  .calculator-window .window-content * {
+    font-family: "ChicagoFLF", monospace !important;
+    font-size: initial !important;
+    line-height: normal !important;
+  }
+  
+  .calculator-window .calculator-button {
+    font-size: 14px !important;
+    line-height: 28px !important;
+  }
+  
+  .calculator-window .calculator-display {
+    font-size: 18px !important;
+    line-height: 24px !important;
+  }
+  
+  /* ===========================
+     Desktop icons
+     =========================== */
+  
+  .desktop-icon {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100px;
+    height: 100px;
+    cursor: pointer;
+    padding: 5px;
+  }
+  
+  .desktop-icon img {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 5px;
+    pointer-events: none;
+  }
+  
+  .desktop-icon-label {
+    text-align: center;
+    font-family: "ChicagoFLF", -apple-system, sans-serif;
+    color: var(--system7-text);
+    font-size: 12px;
+    padding: 1px 4px;
+    pointer-events: none;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    background: #fff;
+    border: 1px solid #000;
+    max-width: 90px;
+    overflow: hidden;
+  }
+  
+  .desktop-icon:hover .desktop-icon-label {
+    background: #000;
+    color: #fff;
+  }
+  
+  .desktop-icon.alias .desktop-icon-label {
+    font-style: italic;
+  }
+  
+  /* Absolute positioned icons directly on desktop */
+  .desktop > .desktop-icon {
+    position: absolute;
+    right: 20px;
+    width: 100px;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  /* Folder windows grid (if you use .folder-window) */
+  .folder-window .window-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 100px);
+    grid-auto-rows: 100px;
+    gap: 10px;
+    padding: 10px;
+    justify-content: start;
+  }
+  
+  .folder-window .desktop-icon {
+    position: relative;
+    width: 100px;
+    height: 100px;
+  }
+  
+  /* ===========================
+   Finder 
+   =========================== */
 
-        :root {
-            --system7-bg: #ffffff;
-            --system7-text: #000000;
-            --system7-window-bg: #ffffff;
-            --system7-border: #000000;
-            --system7-menubar-bg: #ffffff;
-            --system7-titlebar-active: linear-gradient(
-                to bottom,
-                #d8d8d8 0%,
-                #d8d8d8 4px,
-                #000000 4px,
-                #000000 5px,
-                #d8d8d8 5px,
-                #d8d8d8 7px,
-                #000000 7px,
-                #000000 8px,
-                #d8d8d8 8px,
-                #d8d8d8 10px,
-                #000000 10px,
-                #000000 11px,
-                #d8d8d8 11px,
-                #d8d8d8 13px,
-                #000000 13px,
-                #000000 14px,
-                #d8d8d8 14px,
-                #d8d8d8 16px,
-                #000000 16px,
-                #000000 17px,
-                #d8d8d8 17px,
-                #d8d8d8 19px,
-                #000000 19px,
-                #000000 20px,
-                #d8d8d8 20px,
-                #d8d8d8 22px
-            );
-            --system7-titlebar-inactive: #FFFFFF;
-        }
+.finder-window .finder-view {
+    height: 100%;
+    background: #fff;
+    padding: 0;                
+    box-sizing: border-box;
+  }
+  
+  /* Keep FindersKeepers, but scale it up */
+  .finder-window .window-content,
+  .finder-window .window-content * {
+    font-family: "FindersKeepers", monospace !important;
+    font-size: 18px !important;       
+    line-height: 1.15 !important;
+    letter-spacing: -0.2px;
+  }
+  
+  /* Info bar: full width */
+  .finder-window .finder-toolbar {
+    display: none;
+  }
+  
+  .finder-window .finder-toolbar__meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    font-size: 18px !important; 
+    line-height: 1.1;
+  }
+  
+  /* Grid: more breathing room */
+  .finder-window .finder-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 170px); 
+    gap: 40px 60px;                        
+    padding: 40px 30px;                     
+    align-content: start;
+  }
+  
+  /* Icon button */
+  .finder-window .finder-icon {
+    width: 250px;
+    border: none;
+    background: transparent;
+    padding: 0;
+    text-align: center;
+    cursor: default;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  
+  .finder-window .finder-icon:focus {
+    outline: none;
+  }
+  
+.finder-window .window-content,
+.finder-window .window-content * {
+  font-family: "FindersKeepers", monospace !important;
+  font-size: 25px !important;      
+  line-height: 1.1 !important;
+  letter-spacing: -0.2px;
+}
 
-        html, body {
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-        height: 100vh;
-        }
+.finder-window .finder-toolbar__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px !important;
+  line-height: 1;
+}
 
-        .system7 {
-            background-color: var(--system7-bg);
-            font-family: 'ChicagoFLF', -apple-system, sans-serif;
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
+/* Grid padding goes here now */
+.finder-window .finder-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 120px);
+  gap: 26px 34px;
+  padding: 28px 24px 16px 24px;  
+  align-content: start;
+}
 
-        .menubar {
-            position: relative;  /* Important for dropdown positioning */
-            height: 22px;
-            background: var(--system7-menubar-bg);
-            border-bottom: 1px solid var(--system7-border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0;
-            z-index: 1000;
-        }
+/* Icons */
+.finder-window .finder-icon {
+  width: 120px;
+  border: none;
+  background: transparent;
+  padding: 0;
+  text-align: center;
+  cursor: default;
+}
 
-        .menu-icon {
-            width: 16px;
-            height: 16px;
-            object-fit: contain;
-        }
+/* Folder image */
+.finder-window .finder-icon__img {
+  width: 65px !important;      
+  height: 55px !important;
+  margin: 0 auto 10px auto;
+  display: block;
+  object-fit: contain;
+  image-rendering: pixelated;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+/* Finder content area */
+.finder-view {
+    height: 100%;
+    background: #fff;
+    padding: 14px;
+    position: relative;
+    box-sizing: border-box;
+  }
+  
+  /* Grid */
+  .finder-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 22px 26px;
+    align-content: start;
+  }
+  
+  /* Icon button reset (kills the "black square"/button chrome) */
+  .finder-icon {
+    appearance: none;
+    -webkit-appearance: none;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    text-align: center;
+    cursor: default;
+  }
+  
+  .finder-icon:focus {
+    outline: none;
+  }
+  
+  .finder-icon__img {
+    width: 84px;
+    height: 84px;
+    display: block;
+    margin: 0 auto 10px auto;
+    image-rendering: pixelated;
+    background: transparent;
+  }
+  
+  .finder-icon__label {
+    font-family: "FindersKeepers", "ChicagoFLF", sans-serif;
+    font-size: 18px;
+    line-height: 1.1;
+    color: #000;
+    display: inline-block;
+    padding: 2px 6px;
+  }
+  
+  /* Optional: classic selection invert (if you later add selection state) */
+  .finder-icon:active .finder-icon__label {
+    background: #000;
+    color: #fff;
+  }
+  
 
-        .menubar-left {
-            display: flex;
-            align-items: center;
-        }
+  
+  /* Selection highlight */
+  .finder-window .finder-icon:focus .finder-icon__label {
+    background: #000;
+    color: #fff;
+  }
+  
+    /* ===========================
+     Security alert
+     =========================== */
 
-        .menubar-right {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-right: 10px;
-        }
+     #security-window .window-content {
+        font-size: 25px;
+      }
+      
+  /* ===========================
+     Callout sidebar
+     =========================== */
+  
+  .window-content p.callout-sidebar {
+    float: right;
+    clear: both;
+    width: 280px;
+    margin: 2.5em 0 1.5em 1.5em;
+    background: white;
+    border: 1px solid black;
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+    font-family: "ChicagoFLF", sans-serif;
+    font-size: 13px;
+    font-style: normal;
+    position: relative;
+    padding: 22px 10px 10px 10px;
+  }
+  
+  /* Titlebar for callout */
+  .window-content p.callout-sidebar::before {
+    content: "Sidenote";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 22px;
+    line-height: 22px;
+    text-align: center;
+    background: #d8d8d8;
+    border-bottom: 1px solid black;
+    font-weight: bold;
+    font-size: 16px;
+    font-family: "ChicagoFLF", sans-serif;
+    color: black;
+  }
 
-        .desktop {
-            flex: 1;
-            position: relative;
-            overflow: hidden !important;
-            overflow-y: hidden;
-            background: url('/assets/images/backgrounds/MacOS.jpg') no-repeat center center fixed;
-            background-size: cover;
-            padding-right: 20px;
-        }
-
-        .menubar-item {
-            padding: 2px 8px;
-            cursor: default;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .menubar-item:hover {
-            background: #000;
-            color: #fff;
-        }
-
-        .menubar-item img {
-            width: 16px; /* Increased width */
-            height: 16px; /* Increased height */
-        }
-
-        .window {
-            position: absolute;
-            background: var(--system7-window-bg);
-            border: 1px solid var(--system7-border);
-            min-width: 200px;
-            min-height: 100px;
-            box-shadow: 2px 2px 0 rgba(0,0,0,0.2);
-            resize: both;
-            overflow: hidden;
-        }
-
-        .window-titlebar {
-            background: var(--system7-titlebar-active);
-            color: white;
-            padding: 2px 5px;
-            cursor: move;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 20px;
-            position: relative;
-        }
-
-        .window-title {
-            text-align: center;
-            flex-grow: 1;
-            background: #ffffff;
-            color: black;
-            padding: 0 5px;
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-
-        .window-titlebar.inactive .window-title {
-            background: #ffffff;
-        }
-
-        .window-close {
-            width: 12px;
-            height: 12px;
-            border: 1px solid #000;
-            background: #fff;
-            cursor: pointer;
-            position: relative;
-        }
-
-        .window-close:active {
-            background: #000;
-        }
-
-
-        .window-content {
-            padding: 10px;
-            overflow: auto;
-            height: calc(100% - 42px);
-            position: relative;
-            font-family: Arial, Geneva, sans-serif; /* Ensure text uses Arial */
-        }
-
-        .window-content img {
-            max-width: 100%; /* Ensure images resize to the current width of the page */
-            height: auto;
-        }
-
-        .window-content::-webkit-scrollbar-button:vertical:increment {
-            display: none;
-        }
-
-        /* Resize handle 
-        .window {
-            resize: both;
-        }
-        */
-
-        .window-resizer {
-            position: absolute;
-            right: 0;
-            bottom: 0;
-            width: 14px;
-            height: 14px;
-            background: #dedede;
-            border: 1px solid #000;
-            box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #bcbcbc;
-            cursor: se-resize;
-            z-index: 1;
-        }
-
-
-        .window.resizable::after {
-            content: '';
-            position: absolute;
-            right: 0;
-            bottom: 0;
-            width: 14px;
-            height: 14px;
-            background: #c0c0c0;
-            border: 1px solid #000;
-            cursor: se-resize;
-        }
-
-        /* Icons in folder windows keep their grid layout */
-        .folder-window .desktop-icon {
-            position: relative;
-            width: 100px; /* Adjusted width */
-            height: 100px; /* Adjusted height */
-        }
-
-        /* Desktop-specific icon styling */
-        .desktop > .desktop-icon {
-            position: absolute;
-            right: 20px;
-            width: 100px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-
-        .folder-window .window-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, 100px); /* Adjusted column width */
-            grid-auto-rows: 100px; /* Adjusted row height */
-            gap: 10px;
-            padding: 10px;
-            justify-content: start;
-        }
-
-        .desktop-icon {
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100px;
-            height: 100px;
-            cursor: pointer;
-            padding: 5px;
-        }
-
-        .desktop-icon:hover .desktop-icon-label {
-            background: #000;
-            color: #fff;
-        }
-
-        .desktop-icon img {
-            width: 32px;
-            height: 32px;
-            margin-bottom: 5px;
-            pointer-events: none;
-        }
-
-        .desktop-icon-label {
-            text-align: center;
-            color: var(--system7-text);
-            font-size: 12px;
-            word-wrap: break-word;
-            padding: 1px 4px;
-            pointer-events: none;
-            font-family: Arial, Geneva, sans-serif;
-            background: #fff;
-            border: 1px solid #000;
-            max-width: 90px;
-            overflow-wrap: break-word;
-        }
-
-        .desktop-icon.alias .desktop-icon-label {
-            font-style: italic;
-        }
-
-        .dropdown-menu {
-            position: fixed;  /* Changed from absolute */
-            display: none;
-            background: var(--system7-menubar-bg);
-            border: 1px solid var(--system7-border);
-            box-shadow: 2px 2px 0 rgba(0,0,0,0.2);
-            padding: 2px 0;
-            min-width: 160px;
-            z-index: 1001;  /* Above menubar */
-        }
-
-        .dropdown-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            padding: 2px 20px;
-            cursor: default;
-            white-space: nowrap;
-        }
-        
-        .dropdown-item:hover {
-            background: #000;
-            color: #fff;
-        }
-
-        .dropdown-divider {
-            height: 1px;
-            background: var(--system7-border);
-            margin: 2px 0;
-        }
+  /* Terminal look */
+    .chloe-terminal {
+    height: 100%;
+    width: 100%;
+  }
+  
+  .chloe-terminal__hidden-input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    height: 0;
+    width: 0;
+  }
+  
+  .chloe-terminal__screen {
+    height: 100%;
+    width: 100%;
+    padding: 12px;
+    box-sizing: border-box;
+  
+    /* terminal vibe */
+    color: #000000;
+  
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    font-size: 14px;
+    line-height: 1.35;
+  
+    overflow: auto;
+    white-space: pre-wrap; /* respects \n in output */
+  }
+  
+  .chloe-terminal__line {
+    margin: 0;
+  }
+  
+  .chloe-terminal__prompt {
+    color: #000000;
+  }
+  
+  /* Blinking block cursor */
+  .chloe-terminal__cursor {
+    display: inline-block;
+    min-width: 0.8ch;
+    height: 0.9em;
+    background: #302d2d;
+    color: #0b0f0c;
+    vertical-align: -0.1em;
+    animation: chloe-blink 1s steps(1) infinite;
+  }
+  
+  .chloe-terminal__hidden-input {
+    position: absolute;
+    left: -9999px;  
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+  }
+  
+  /* Prompt coloring */
+.chloe-terminal__user {
+    color: #0d4119;   
+  }
+  
+  .chloe-terminal__path {
+    color: #487d48;  
+  }
 
 
-        @media (max-width: 768px) {
-            .window {
-                width: calc(100% - 20px) !important; /* Add 10px padding on each side */
-                height: calc(100% - 30px) !important; /* Adjusted for top bar + padding */
-                top: 25px !important; /* Slightly more space from the top */
-                left: 10px !important; /* Add left padding */
-                resize: none;
-                max-width: 500px; /* Prevent windows from getting too wide */
-                margin: 0 auto; /* Center the window if screen is wider than max-width */
-            }
 
-            /* Make sure content fits nicely */
-            .window-content {
-                padding: 8px;
-                font-size: 14px; /* Slightly smaller text on mobile */
-            }
+  /* ===== Finder password modal ===== */
+.finder-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.75);
+    display: grid;
+    place-items: center;
+  }
+  
+  .finder-modal__window {
+    width: 340px;
+    background: #fff;
+    border: 2px solid #000;
+    box-shadow: 2px 2px 0 rgba(0,0,0,0.25);
+  }
+  
+  .finder-modal__titlebar {
+    height: 22px;
+    background: #d8d8d8;
+    border-bottom: 1px solid #000;
+    display: grid;
+    place-items: center;
+  }
+  
+  .finder-modal__title {
+    font-family: "ChicagoFLF", sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+  }
+  
+  .finder-modal__content {
+    padding: 12px;
+  }
+  
+  .finder-modal__text {
+    font-family: "FindersKeepers", "ChicagoFLF", sans-serif;
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+  
+  .finder-modal__input {
+    width: 100%;
+    box-sizing: border-box;
+    border: 2px solid #000;
+    padding: 6px 8px;
+    font-family: "FindersKeepers", "ChicagoFLF", sans-serif;
+    font-size: 18px;
+    outline: none;
+  }
+  
+  .finder-modal__error {
+    margin-top: 8px;
+    font-family: "FindersKeepers", "ChicagoFLF", sans-serif;
+    font-size: 16px;
+  }
+  
+  .finder-modal__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 10px 12px 12px;
+  }
+  
+  .finder-modal__btn {
+    border: 2px solid #000;
+    background: #fff;
+    padding: 4px 10px;
+    font-family: "ChicagoFLF", sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  
+  .finder-modal__btn:active {
+    background: #000;
+    color: #fff;
+  }
+  
+  @keyframes chloe-blink {
+    0%,
+    49% {
+      opacity: 1;
+    }
+    50%,
+    100% {
+      opacity: 0;
+    }
+  }
+  
+  /* Password popup styling */
+.unlock-window .window-content {
+    font-family: "ChicagoFLF", sans-serif;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .unlock-message {
+    font-size: 18px;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+  
+  .unlock-actions {
+    display: flex;
+    justify-content: center;
+  }
+  
+  .unlock-btn {
+    font-family: "ChicagoFLF", sans-serif;
+    font-size: 16px;
+    padding: 6px 20px;
+    border: 2px solid black;
+    background: white;
+    cursor: pointer;
+  }
+  
+  .unlock-btn:active {
+    background: black;
+    color: white;
+  }
+  
 
-            /* Ensure the About window specifically isn't too large */
-            .window[style*="width: 400px"][style*="height: 225px"] {
-                width: calc(100% - 40px) !important;
-                max-width: 400px !important;
-                max-height: 225px !important;
-                left: 50% !important;
-                transform: translateX(-50%);
-            }
-
-            /* Ensure the Access main security grid window specifically isn't too large */
-            .window[style*="width: 230px"][style*="height: 250px"] {
-                width: 230px !important;
-                height: 250px !important;
-                left: 50% !important;
-                transform: translateX(-50%);
-                resize: none !important;
-            }
-        }
-
-        .clock {
-            padding: 0 10px;
-            color: var(--system7-text);
-            font-family: 'ChicagoFLF', -apple-system, sans-serif;
-        }
-
-        /* Application menu specific styles */
-        .app-menu {
-            padding: 2px 8px;
-            min-width: 24px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .app-menu .app-icon {
-            width: 16px;
-            height: 16px;
-            pointer-events: none;
-        }
-
-        .app-menu .app-name {
-            display: block;
-        }
-
-        #application-menu {
-            min-width: 200px;
-        }
-
-        .window-content p.callout-sidebar {
-            float: right;
-            clear: both;
-            width: 280px;
-            margin: 2.5em 0 1.5em 1.5em;
-            background: white;
-            border: 1px solid black;
-            box-shadow: 2px 2px 0 rgba(0,0,0,0.2);
-            font-family: 'ChicagoFLF', sans-serif;
-            font-size: 13px;
-            font-style: normal;
-            position: relative;
-            padding-top: 22px; /* matches titlebar height */
-            padding: 22px 10px 10px 10px;
-        }
-        
-        /* Flat System 7-style titlebar */
-        .window-content p.callout-sidebar::before {
-            content: "Sidenote";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 22px;
-            line-height: 22px;
-            text-align: center;
-            background: #d8d8d8;
-            border-bottom: 1px solid black;
-            font-weight: bold;
-            font-size: 16px;
-            font-family: 'ChicagoFLF', sans-serif;
-            color: black;
-        }
+  /* ===========================
+     Responsive
+     =========================== */
+  
+  @media (max-width: 768px) {
+    .window {
+      width: calc(100% - 20px) !important;
+      height: calc(100% - 30px) !important;
+      top: 25px !important;
+      left: 10px !important;
+      resize: none;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+  
+    .window-content {
+      padding: 8px;
+      font-size: 14px;
+    }
+  
+    /* Example targeted sizing from your previous rules */
+    .window[style*="width: 400px"][style*="height: 225px"] {
+      width: calc(100% - 40px) !important;
+      max-width: 400px !important;
+      max-height: 225px !important;
+      left: 50% !important;
+      transform: translateX(-50%);
+    }
+  
+    .window[style*="width: 230px"][style*="height: 250px"] {
+      width: 230px !important;
+      height: 250px !important;
+      left: 50% !important;
+      transform: translateX(-50%);
+      resize: none !important;
+    }
+  }
+  

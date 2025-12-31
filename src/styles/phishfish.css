@@ -1,0 +1,35 @@
+@font-face {
+    font-family: "FindersKeepers";
+    src: url("/assets/fonts/FindersKeepers.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+  }
+  
+/* Prevent "100% width + padding/border" overflow issues everywhere */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+/* Only for the email panel + its buttons */
+.email-panel-finders {
+    font-family: "FindersKeepers", monospace;
+    letter-spacing: 0.4px;
+    font-smooth: never;
+    -webkit-font-smoothing: none;
+  }
+  
+  /* Smaller body text inside that panel */
+  .email-panel-finders .finders-email {
+    font-size: 13px;
+    line-height: 1.35;
+  }
+  
+  /* Make ONLY the buttons in this panel FindersKeepers too */
+  .email-panel-finders button {
+    font-family: "FindersKeepers", monospace !important;
+    letter-spacing: 0.4px;
+    font-smooth: never;
+    -webkit-font-smoothing: none;
+  }
+  

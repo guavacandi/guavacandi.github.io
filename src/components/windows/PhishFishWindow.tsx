@@ -39,6 +39,13 @@ type Fish = {
 
 const STORAGE_KEY = "chloe_phishfish_stats_v1";
 
+// Higher = chunkier pixels
+const PIXEL_SCALE = 4;
+
+// NEW: top "land" strip so the cat sits above the water (inside the canvas, so it won't clip)
+const LAND_ROWS = 10; // in low-res pixels (try 8–14)
+const LAND_PX = LAND_ROWS * PIXEL_SCALE; // in real pixels (used for click restriction)
+
 function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
 }
@@ -169,6 +176,8 @@ export default function PhishFishWindow() {
 
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const offscreenRef = useRef<HTMLCanvasElement | null>(null);
+
   const [canvasSize, setCanvasSize] = useState({ w: 680, h: 260 });
 
   const fishRef = useRef<Fish[]>([]);
@@ -181,10 +190,10 @@ export default function PhishFishWindow() {
   const [lastResult, setLastResult] = useState<{ wasCorrect: boolean; verdict: Verdict; email: Email } | null>(null);
 
   const colors = {
-    pondTop: "#b7f3d0",
-    pondBottom: "#2b6b4f",
-    lily: "#2d8a58",
-    lilyVein: "#1e6a43",
+    pondTop: "#b7e9ff",     // light blue surface
+    pondBottom: "#2b6fb3",  // deep water blue
+    lily: "#3a9c7a",
+    lilyVein: "#2b7a5e",
     foam: "rgba(255,255,255,0.55)",
     ink: "#163b2a",
     paper: "#fffdf7",
@@ -201,11 +210,11 @@ export default function PhishFishWindow() {
       fish.push({
         id: `fish-${Date.now()}-${i}`,
         x: rand(20, canvasSize.w - 20),
-        y: rand(60, canvasSize.h - 30),
+        y: rand(60 + LAND_PX, canvasSize.h - 30),
         vx: rand(18, 40) * (Math.random() < 0.5 ? 1 : -1),
         size: rand(10, 16),
         emailId: email.id,
-        hue: rand(110, 150),
+        hue: rand(330, 360),
       });
     }
     fishRef.current = fish;
@@ -226,105 +235,216 @@ export default function PhishFishWindow() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canvasSize.w, canvasSize.h]);
 
-  function draw() {
+  function drawPixelCat(ctx: CanvasRenderingContext2D, x: number, y: number, t: number) {
+    const fur = "#f5f1e8";      // off-white
+    const patches = "#b98b5a";  // brown
+    const outline = "#d1c8be";  
+    const eyes = "#2b2b2b";
+  
+    // Helper to draw the base cat shape
+    const drawBase = (ox: number, oy: number, color: string) => {
+      ctx.fillStyle = color;
+  
+      // head
+      ctx.fillRect(x + 2 + ox, y + 2 + oy, 10, 6);
+      // body
+      ctx.fillRect(x + 1 + ox, y + 7 + oy, 12, 4);
+      // ears
+      ctx.fillRect(x + 2 + ox, y + 1 + oy, 2, 2);
+      ctx.fillRect(x + 10 + ox, y + 1 + oy, 2, 2);
+      // paw
+      ctx.fillRect(x + 7 + ox, y + 10 + oy, 2, 2);
+    };
+  
+    // --- OUTLINE PASS (draw around all sides) ---
+    const outlineOffsets = [
+      [-1, 0],
+      [1, 0],
+      [0, -1],
+      [0, 1],
+      [-1, -1],
+      [1, -1],
+      [-1, 1],
+      [1, 1],
+    ];
+  
+    for (const [ox, oy] of outlineOffsets) {
+      drawBase(ox, oy, outline);
+    }
+  
+    // --- MAIN BODY ---
+    drawBase(0, 0, fur);
+  
+    // Brown patches
+    ctx.fillStyle = patches;
+    ctx.fillRect(x + 3, y + 3, 3, 2);
+    ctx.fillRect(x + 6, y + 8, 3, 2);
+  
+    // Eyes
+    ctx.fillStyle = eyes;
+    ctx.fillRect(x + 5, y + 4, 1, 1);
+    ctx.fillRect(x + 8, y + 4, 1, 1);
+  
+    // Paw color
+    ctx.fillStyle = patches;
+    ctx.fillRect(x + 7, y + 10, 2, 2);
+  
+    // --- Tail wag animation (NO outline) ---
+const wag = Math.sin(t / 180);
+const frame = wag > 0.35 ? 1 : wag < -0.35 ? -1 : 0;
+
+const tailBlock = (tx: number, ty: number) => {
+  ctx.fillStyle = patches;
+  ctx.fillRect(tx, ty, 2, 2);
+};
+
+const tailCoords =
+  frame === 1
+    ? [[13, 7], [15, 6], [17, 5]]
+    : frame === -1
+    ? [[13, 10], [15, 11], [17, 12]]
+    : [[13, 9], [15, 9], [17, 9]];
+
+for (const [tx, ty] of tailCoords) {
+  tailBlock(x + tx, y + ty);
+}
+
+  }
+  
+  
+  
+
+  function draw(t: number) {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d");
+    const out = canvas.getContext("2d");
+    if (!out) return;
+
+    if (!offscreenRef.current) offscreenRef.current = document.createElement("canvas");
+    const buf = offscreenRef.current;
+    const ctx = buf.getContext("2d");
     if (!ctx) return;
 
     const { w, h } = canvasSize;
 
-    canvas.width = w * devicePixelRatio;
-    canvas.height = h * devicePixelRatio;
+    canvas.width = w;
+    canvas.height = h;
     canvas.style.width = `${w}px`;
     canvas.style.height = `${h}px`;
-    ctx.scale(devicePixelRatio, devicePixelRatio);
 
-    const grad = ctx.createLinearGradient(0, 0, 0, h);
+    const lw = Math.max(1, Math.floor(w / PIXEL_SCALE));
+    const lh = Math.max(1, Math.floor(h / PIXEL_SCALE));
+    buf.width = lw;
+    buf.height = lh;
+
+    out.imageSmoothingEnabled = false;
+    ctx.imageSmoothingEnabled = false;
+
+    const sx = (x: number) => Math.round(x / PIXEL_SCALE);
+    const sy = (y: number) => Math.round(y / PIXEL_SCALE);
+    const ss = (s: number) => Math.max(1, Math.round(s / PIXEL_SCALE));
+
+    // LAND STRIP (so cat is above water, not clipped)
+    const waterStart = LAND_ROWS;
+
+    ctx.fillStyle = "#f7fbf7";
+    ctx.fillRect(0, 0, lw, waterStart);
+
+    // Water gradient
+    const grad = ctx.createLinearGradient(0, waterStart, 0, lh);
     grad.addColorStop(0, colors.pondTop);
     grad.addColorStop(1, colors.pondBottom);
     ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, w, h);
+    ctx.fillRect(0, waterStart, lw, lh - waterStart);
 
+    // Shoreline
+    ctx.fillStyle = "#4a689e";
+    ctx.fillRect(0, waterStart - 1, lw, 1);
+
+    // Foam bubbles (in water)
     ctx.fillStyle = colors.foam;
     for (let i = 0; i < 16; i++) {
-      const bx = (i * 97) % w;
-      const by = 25 + ((i * 37) % 40);
+      const bx = ((i * 97) % w) / PIXEL_SCALE;
+      const by = (LAND_PX + 18 + ((i * 37) % 40)) / PIXEL_SCALE;
+      const r = (4 + (i % 3)) / PIXEL_SCALE;
       ctx.beginPath();
-      ctx.arc(bx, by, 4 + (i % 3), 0, Math.PI * 2);
+      ctx.arc(Math.round(bx), Math.round(by), Math.max(1, Math.round(r)), 0, Math.PI * 2);
       ctx.fill();
     }
 
-    const pads = [
-      { x: w * 0.18, y: h * 0.23, r: 22 },
-      { x: w * 0.42, y: h * 0.18, r: 18 },
-      { x: w * 0.77, y: h * 0.26, r: 20 },
-    ];
-    for (const p of pads) {
-      ctx.fillStyle = colors.lily;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fill();
 
-      ctx.strokeStyle = colors.lilyVein;
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(p.x, p.y);
-      ctx.lineTo(p.x + p.r, p.y - 2);
-      ctx.stroke();
-    }
+    // Cat sits on land
+    const catBaseX = Math.floor(lw / 2) - 7;
+    const catBaseY = 1;
+    drawPixelCat(ctx, catBaseX, catBaseY, t);
 
+    // Line starts at paw
+    const lineStart = { x: catBaseX + 8, y: catBaseY + 14 };
+
+    // Line + bobber
     if (cast) {
-      ctx.strokeStyle = "rgba(10,10,10,0.35)";
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = "rgba(10,10,10,0.55)";
+      ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(w * 0.08, 0);
-      ctx.lineTo(cast.x, cast.y);
+      ctx.moveTo(lineStart.x, lineStart.y);
+      ctx.lineTo(sx(cast.x), sy(cast.y));
       ctx.stroke();
 
       ctx.fillStyle = "#ff8fb1";
       ctx.beginPath();
-      ctx.arc(cast.x, cast.y, 6, 0, Math.PI * 2);
+      ctx.arc(sx(cast.x), sy(cast.y), 2, 0, Math.PI * 2);
       ctx.fill();
 
       ctx.fillStyle = "#ffffff";
+      ctx.fillRect(sx(cast.x), sy(cast.y) - 1, 1, 1);
+    } else {
+      ctx.strokeStyle = "rgba(10,10,10,0.25)";
+      ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.arc(cast.x, cast.y - 2, 3, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.moveTo(lineStart.x, lineStart.y);
+      ctx.lineTo(lineStart.x, lineStart.y + 10);
+      ctx.stroke();
+      ctx.fillStyle = "rgba(255,255,255,0.4)";
+      ctx.fillRect(lineStart.x, lineStart.y + 10, 1, 1);
     }
 
+    // Fish
     for (const f of fishRef.current) {
-      const bodyColor = `hsl(${f.hue}deg 55% 45%)`;
+      const bodyColor = `hsl(${f.hue}deg 60% 60%)`;
       const finColor = `hsl(${f.hue + 10}deg 55% 38%)`;
+
+      const fx = sx(f.x);
+      const fy = sy(f.y);
+      const size = Math.max(2, ss(f.size));
 
       ctx.fillStyle = bodyColor;
       ctx.beginPath();
-      ctx.ellipse(f.x, f.y, f.size * 1.6, f.size, 0, 0, Math.PI * 2);
+      ctx.ellipse(fx, fy, size + 2, size, 0, 0, Math.PI * 2);
       ctx.fill();
 
       ctx.fillStyle = finColor;
       ctx.beginPath();
       if (f.vx >= 0) {
-        ctx.moveTo(f.x - f.size * 1.6, f.y);
-        ctx.lineTo(f.x - f.size * 2.4, f.y - f.size * 0.8);
-        ctx.lineTo(f.x - f.size * 2.4, f.y + f.size * 0.8);
+        ctx.moveTo(fx - (size + 2), fy);
+        ctx.lineTo(fx - (size + 5), fy - Math.max(1, size - 1));
+        ctx.lineTo(fx - (size + 5), fy + Math.max(1, size - 1));
       } else {
-        ctx.moveTo(f.x + f.size * 1.6, f.y);
-        ctx.lineTo(f.x + f.size * 2.4, f.y - f.size * 0.8);
-        ctx.lineTo(f.x + f.size * 2.4, f.y + f.size * 0.8);
+        ctx.moveTo(fx + (size + 2), fy);
+        ctx.lineTo(fx + (size + 5), fy - Math.max(1, size - 1));
+        ctx.lineTo(fx + (size + 5), fy + Math.max(1, size - 1));
       }
       ctx.closePath();
       ctx.fill();
 
       ctx.fillStyle = colors.ink;
-      ctx.beginPath();
-      ctx.arc(f.x + (f.vx >= 0 ? f.size * 0.8 : -f.size * 0.8), f.y - 2, 2.2, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.fillRect(fx + (f.vx >= 0 ? 1 : -1), fy - 1, 1, 1);
     }
 
-    ctx.fillStyle = "rgba(0,0,0,0.35)";
-    ctx.font = "12px Tahoma, sans-serif";
-    ctx.fillText("Click the pond to cast. Catch an email-fish 🐟", 12, h - 10);
+    // Upscale buffer to output
+    out.clearRect(0, 0, w, h);
+    out.drawImage(buf, 0, 0, lw, lh, 0, 0, w, h);
+
+  
   }
 
   function step(t: number) {
@@ -345,10 +465,12 @@ export default function PhishFishWindow() {
         f.x = w - 10;
         f.vx = -Math.abs(f.vx);
       }
-      f.y = clamp(f.y, 55, h - 25);
+
+      // keep fish in water zone
+      f.y = clamp(f.y, LAND_PX + 12, h - 25);
     }
 
-    // Catch check
+    // Catch check (unchanged)
     if (cast && phase === "pond") {
       const catchRadius = 16;
       const fish = fishRef.current;
@@ -368,13 +490,12 @@ export default function PhishFishWindow() {
 
         fishRef.current = fishRef.current.filter((x) => x.id !== caughtFish.id);
 
-        // respawn later
         setTimeout(() => {
           const replacement = pick(emails);
           fishRef.current.push({
             id: `fish-${Date.now()}-${Math.random()}`,
             x: Math.random() < 0.5 ? 12 : w - 12,
-            y: rand(70, h - 30),
+            y: rand(LAND_PX + 20, h - 30),
             vx: rand(18, 40) * (Math.random() < 0.5 ? 1 : -1),
             size: rand(10, 16),
             emailId: replacement.id,
@@ -386,7 +507,7 @@ export default function PhishFishWindow() {
       }
     }
 
-    draw();
+    draw(t);
     rafRef.current = requestAnimationFrame(step);
   }
 
@@ -402,7 +523,13 @@ export default function PhishFishWindow() {
   function onCast(e: React.MouseEvent<HTMLCanvasElement>) {
     if (phase !== "pond") return;
     const rect = e.currentTarget.getBoundingClientRect();
-    setCast({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // Only allow casts in the water area
+    if (y < LAND_PX) return;
+
+    setCast({ x, y });
   }
 
   function judge(verdict: Verdict) {
@@ -432,9 +559,7 @@ export default function PhishFishWindow() {
     setCast(null);
   }
 
-  function resetStats() {
-    setStats({ score: 0, streak: 0, bestStreak: 0, total: 0, correct: 0, caught: stats.caught });
-  }
+
 
   const card = (children: React.ReactNode) => (
     <div
@@ -451,150 +576,209 @@ export default function PhishFishWindow() {
   );
 
   return (
-    <div style={{ height: "100%", background: "#eaf7ef", padding: 12, overflow: "auto" }}>
+      <div style={{ background: "transparent", padding: 12 }}>
+    
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
-        <div style={{ fontWeight: 800, fontSize: 16, color: "#1e5a3f" }}>🐈 Toki’s Phish-Fish</div>
+        <div style={{ fontWeight: 800, fontSize: 16, color: "#1e5a3f" }}>Toki’s Phish-Fish</div>
         <div style={{ marginLeft: "auto", display: "flex", gap: 12, fontSize: 13, color: "#1e5a3f" }}>
-          <div><b>Score:</b> {stats.score}</div>
-          <div><b>Streak:</b> {stats.streak}</div>
-          <div><b>Best:</b> {stats.bestStreak}</div>
-          <div><b>Accuracy:</b> {accuracy}%</div>
-          <div><b>Caught:</b> {stats.caught}</div>
+          <div>
+            <b>Score:</b> {stats.score}
+          </div>
+          <div>
+            <b>Streak:</b> {stats.streak}
+          </div>
+          <div>
+            <b>Best:</b> {stats.bestStreak}
+          </div>
+          <div>
+            <b>Accuracy:</b> {accuracy}%
+          </div>
+          <div>
+            <b>Caught:</b> {stats.caught}
+          </div>
         </div>
       </div>
 
-      <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
-        <button
-          onClick={resetStats}
-          style={{ padding: "6px 10px", borderRadius: 10, border: `1px solid ${colors.border}`, background: "#fff", cursor: "pointer" }}
-        >
-          Reset score (keep caught)
-        </button>
-        
+    
+
+      <div
+  ref={wrapperRef}
+  style={{
+    width: "100%",
+    marginBottom: 12,
+    display: "block",
+    flex: "0 0 auto",
+    overflow: "hidden",
+    alignSelf: "flex-start",
+  }}
+>
+  {card(
+    <div style={{ display: "block", flex: "0 0 auto", alignSelf: "flex-start" }}>
+      {/* everything inside stays the same */}
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+        <div style={{ fontWeight: 700, color: "#1e5a3f" }}>
+          {phase === "pond" ? "Cast your line!" : phase === "caught" ? "You caught one!" : "How did you do?"}
+        </div>
+        <div style={{ fontSize: 12, color: "#2f6b4e" }}>
+          {phase === "pond" ? "Click the water to cast " : phase === "caught" ? "Decide: phish or legit" : "Read the clues"}
+        </div>
       </div>
 
-      <div style={{ width: "106%", marginBottom: 12 }} ref={wrapperRef}>
-        {card(
-          <>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-              <div style={{ fontWeight: 700, color: "#1e5a3f" }}>
-                {phase === "pond" ? "Cast your line!" : phase === "caught" ? "You caught one!" : "How did you do?"}
-              </div>
-              <div style={{ fontSize: 12, color: "#2f6b4e" }}>
-                {phase === "pond" ? "Click the water to cast 🎣" : phase === "caught" ? "Decide: phish or legit" : "Read the clues"}
-              </div>
-            </div>
+      <div style={{ padding: 10 }}>
+  <canvas
+    ref={canvasRef}
+    onClick={onCast}
+    style={{
+      width: "100%",
+      maxWidth: "100%",
+      height: canvasSize.h,
+      borderRadius: 10,
+      border: `1px solid ${colors.border}`,
+      cursor: phase === "pond" ? "crosshair" : "default",
+      imageRendering: "pixelated",
+      boxSizing: "border-box",
+      display: "block",
+    }}
+  />
+</div>
 
-            <canvas
-              ref={canvasRef}
-              onClick={onCast}
-              style={{
-                width: "100%",
-                height: canvasSize.h,
-                borderRadius: 10,
-                border: `1px solid ${colors.border}`,
-                cursor: phase === "pond" ? "crosshair" : "default",
-              }}
-            />
-          </>
-        )}
-      </div>
+    </div>
+  )}
+</div>
+
 
       {phase !== "pond" && currentEmail && (
         <div style={{ marginBottom: 12 }}>
           {card(
-            <>
-              <div style={{ fontWeight: 800, fontSize: 14, color: "#1e5a3f" }}>📨 Email caught!</div>
+              <div className="email-panel-finders">
 
-              <div style={{ marginTop: 10 }}>
-                <div style={{ fontSize: 12, color: "#4b7b63" }}>From</div>
-                <div style={{ fontWeight: 700 }}>
-                  {currentEmail.fromName}{" "}
-                  <span style={{ fontWeight: 400, color: "#284b3a" }}>{`<${currentEmail.fromEmail}>`}</span>
-                </div>
+              <div style={{ fontWeight: 800, fontSize: 12, color: "#1e5a3f" }}>Email caught!</div>
 
-                <div style={{ fontSize: 12, color: "#4b7b63", marginTop: 6 }}>Reply-To</div>
-                <div style={{ fontFamily: "monospace", fontSize: 12, color: "#1e5a3f" }}>
-                  {currentEmail.replyTo ?? currentEmail.fromEmail}
-                </div>
+              <div
+  style={{
+    marginTop: 10,
+    fontFamily: '"FindersKeepers", monospace',
+    fontSize: "20px",
+    lineHeight: 1.35,
+    letterSpacing: "0.4px",
+    WebkitFontSmoothing: "none",
+  }}
+>
 
-                <div style={{ fontSize: 12, color: "#4b7b63", marginTop: 6 }}>Return-Path</div>
-                <div style={{ fontFamily: "monospace", fontSize: 12, color: "#1e5a3f" }}>
-                  {currentEmail.returnPath ?? "(not shown)"}
-                </div>
+  <div style={{ fontSize: 20, color: "#4b7b63" }}>From</div>
+  <div>
+    {currentEmail.fromName}{" "}
+    <span style={{ fontWeight: 400 }}>
+      {`<${currentEmail.fromEmail}>`}
+    </span>
+  </div>
 
-                <div style={{ fontSize: 12, color: "#4b7b63", marginTop: 10 }}>Subject</div>
-                <div style={{ fontWeight: 800 }}>{currentEmail.subject}</div>
+  <div style={{ fontSize: 20, color: "#4b7b63", marginTop: 6 }}>Reply-To</div>
+  <div>
+    {currentEmail.replyTo ?? currentEmail.fromEmail}
+  </div>
 
-                <div style={{ fontSize: 12, color: "#4b7b63", marginTop: 8 }}>Preview</div>
-                <div style={{ lineHeight: 1.4, color: "#1d3b2c" }}>{currentEmail.snippet}</div>
+  <div style={{ fontSize: 20, color: "#4b7b63", marginTop: 6 }}>Return-Path</div>
+  <div>
+    {currentEmail.returnPath ?? "(not shown)"}
+  </div>
 
-                {(currentEmail.linkText || currentEmail.linkUrl) && (
-                  <div style={{ marginTop: 10 }}>
-                    <div style={{ fontSize: 12, color: "#4b7b63" }}>Link</div>
-                    <div>
-                      <span style={{ fontWeight: 700 }}>{currentEmail.linkText || "Link"}</span>
-                      {currentEmail.linkUrl && (
-                        <div style={{ fontFamily: "monospace", fontSize: 12, color: "#0a66c2" }}>
-                          {currentEmail.linkUrl}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
+  <div style={{ fontSize: 20, color: "#4b7b63", marginTop: 10 }}>Subject</div>
+  <div>
+    {currentEmail.subject}
+  </div>
 
-                {currentEmail.attachments && currentEmail.attachments.length > 0 && (
-                  <div style={{ marginTop: 10 }}>
-                    <div style={{ fontSize: 12, color: "#4b7b63" }}>Attachments</div>
-                    <ul style={{ margin: "6px 0 0 18px" }}>
-                      {currentEmail.attachments.map((a) => (
-                        <li key={a} style={{ fontFamily: "monospace", fontSize: 12 }}>
-                          {a}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+  <div style={{ fontSize: 20, color: "#4b7b63", marginTop: 8 }}>Preview</div>
+  <div>
+    {currentEmail.snippet}
+  </div>
 
-                <div style={{ marginTop: 10, fontSize: 12, color: "#2f6b4e" }}>
-                  Cozy check: domain is <b>{extractDomain(currentEmail.fromEmail)}</b> &nbsp;|&nbsp; Auth:{" "}
-                  <span style={{ fontFamily: "monospace" }}>
-                    SPF={currentEmail.auth.spf} DKIM={currentEmail.auth.dkim} DMARC={currentEmail.auth.dmarc}
-                  </span>
-                </div>
-              </div>
+  {currentEmail.attachments && (
+    <div style={{ marginTop: 10 }}>
+      <div style={{ fontSize: 20, color: "#4b7b63" }}>Attachments</div>
+      
+        {currentEmail.attachments.map((a) => (
+          <div key={a}>{a}</div>
+        ))}
+      
+    </div>
+  )}
+
+  <div style={{ marginTop: 10 }}>
+    Domain is {extractDomain(currentEmail.fromEmail)} | Auth:{" "}
+    <span>
+      SPF={currentEmail.auth.spf} DKIM={currentEmail.auth.dkim} DMARC={currentEmail.auth.dmarc}
+    </span>
+  </div>
+</div>
+
 
               {phase === "caught" && (
                 <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
                   <button
                     onClick={() => judge("phish")}
-                    style={{ padding: "7px 12px", borderRadius: 12, border: "1px solid #c7a1a1", background: "#ffe7e7", cursor: "pointer", fontWeight: 700 }}
+                    style={{
+                      padding: "7px 12px",
+                      borderRadius: 12,
+                      fontFamily: '"FindersKeepers", monospace',
+                      fontSize: "23px",
+                      border: "1px solid #c7a1a1",
+                      background: "#ffe7e7",
+                      cursor: "pointer",
+                      fontWeight: 700,
+                    }}
                   >
-                    🚨 PHISH
+                    PHISH
                   </button>
                   <button
                     onClick={() => judge("legit")}
-                    style={{ padding: "7px 12px", borderRadius: 12, border: "1px solid #a8c9b6", background: "#e7ffe7", cursor: "pointer", fontWeight: 700 }}
+                    style={{
+                      padding: "7px 12px",
+                      fontFamily: '"FindersKeepers", monospace',
+                      fontSize: "23px",
+                      borderRadius: 12,
+                      border: "1px solid #a8c9b6",
+                      background: "#e7ffe7",
+                      cursor: "pointer",
+                      fontWeight: 700,
+                    }}
                   >
-                    ✅ LEGIT
+                  LEGIT
                   </button>
                   <button
                     onClick={nextRound}
-                    style={{ marginLeft: "auto", padding: "7px 12px", borderRadius: 12, border: `1px solid ${colors.border}`, background: "#fff", cursor: "pointer" }}
+                    style={{
+                      marginLeft: "auto",
+                      fontFamily: '"FindersKeepers", monospace',
+            fontSize: "23px",
+                      padding: "7px 12px",
+                      borderRadius: 12,
+                      border: `1px solid ${colors.border}`,
+                      background: "#fff",
+                      cursor: "pointer",
+                    }}
                     title="Skip (no points)"
                   >
-                    Let it go 🌊
+                    Let it go 
                   </button>
                 </div>
               )}
 
               {phase === "result" && lastResult && (
-                <div style={{ marginTop: 12, padding: 12, borderRadius: 12, border: `1px solid ${colors.border}`, background: lastResult.wasCorrect ? "#eafff1" : "#fff1f1" }}>
+                <div
+                  style={{
+                    marginTop: 12,
+                    padding: 12,
+                    borderRadius: 12,
+                    border: `1px solid ${colors.border}`,
+                    background: lastResult.wasCorrect ? "#eafff1" : "#fff1f1",
+                  }}
+                >
                   <div style={{ fontWeight: 800, color: "#1e5a3f" }}>
-                    {lastResult.wasCorrect ? "Correct! ✨" : "Almost! 🌿"}{" "}
+                    {lastResult.wasCorrect ? "Correct!" : "Almost! "}{" "}
                     <span style={{ fontWeight: 400 }}>(It was {lastResult.email.isPhish ? "PHISH" : "LEGIT"})</span>
                   </div>
-                  <div style={{ marginTop: 8, fontSize: 13, color: "#1d3b2c" }}>
+                  <div style={{ marginTop: 8, fontSize: 12, color: "#1d3b2c" }}>
                     Why:
                     <ul style={{ margin: "6px 0 0 18px", lineHeight: 1.5 }}>
                       {lastResult.email.reasons.map((r) => (
@@ -605,19 +789,26 @@ export default function PhishFishWindow() {
                   <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
                     <button
                       onClick={nextRound}
-                      style={{ padding: "7px 12px", borderRadius: 12, border: `1px solid ${colors.border}`, background: "#fff", cursor: "pointer", fontWeight: 700 }}
+                      style={{
+                        padding: "7px 12px",
+                        fontFamily: '"FindersKeepers", monospace',
+            fontSize: "23px",
+                        borderRadius: 12,
+                        border: `1px solid ${colors.border}`,
+                        background: "#fff",
+                        cursor: "pointer",
+                        fontWeight: 700,
+                      }}
                     >
                       Fish again →
                     </button>
                   </div>
                 </div>
               )}
-            </>
+            </div>
           )}
         </div>
       )}
-
-      
     </div>
   );
 }

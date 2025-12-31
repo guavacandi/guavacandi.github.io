@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 type Props = {
   id: string;
@@ -9,8 +9,11 @@ type Props = {
   onFocus: () => void;
   width?: number;
   height?: number;
+  className?: string;
   children: React.ReactNode;
 };
+
+const TITLEBAR_H = 35;
 
 export default function Window({
   id,
@@ -21,10 +24,14 @@ export default function Window({
   onFocus,
   width,
   height,
+  className,
   children,
 }: Props) {
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const [drag, setDrag] = useState<{ startX: number; startY: number } | null>(null);
+
+  const isCalculator =
+    className?.includes("calculator-window") || id === "calculator-window";
 
   useEffect(() => {
     if (isOpen) setPos({ x: 0, y: 0 });
@@ -46,18 +53,48 @@ export default function Window({
 
   if (!isOpen) return null;
 
+  const baseStyle: React.CSSProperties = {
+    position: "fixed",
+    zIndex,
+    width: width ? `${width}px` : undefined,
+    height: height ? `${height}px` : undefined,
+  };
+
+  const centeredStyle: React.CSSProperties = {
+    ...baseStyle,
+    top: "50%",
+    left: "50%",
+    transform: `translate(calc(-50% + ${pos.x}px), calc(-50% + ${pos.y}px))`,
+  };
+
+  const calculatorStyle: React.CSSProperties = {
+    ...baseStyle,
+    top: "90px",
+    left: "40px",
+    transform: `translate(${pos.x}px, ${pos.y}px)`,
+  };
+
+  const style = isCalculator ? calculatorStyle : centeredStyle;
+
+  // If a height is provided, constrain the content and allow scroll.
+  // If no height is provided, content should hug its children.
+  const contentStyle: React.CSSProperties = height
+    ? {
+        height: `calc(${height}px - ${TITLEBAR_H}px)`,
+        overflow: "auto",
+        background: "transparent",
+      }
+    : {
+        height: "auto",
+        overflow: "visible",
+        background: "transparent",
+      };
+
   return (
     <div
       id={id}
-      className="window"
-      style={{
-        zIndex,
-        width: width ? `${width}px` : undefined,
-        height: height ? `${height}px` : undefined,
-        transform: `translate(calc(-50% + ${pos.x}px), calc(-50% + ${pos.y}px))`,
-        top: "50%",
-        left: "50%",
-      }}
+      className={`window ${className ?? ""}`}
+      style={style}
       onMouseDown={onFocus}
     >
       <div
@@ -65,6 +102,7 @@ export default function Window({
         onMouseDown={(e) => {
           const target = e.target as HTMLElement;
           if (target.closest(".window-close")) return;
+
           onFocus();
           setDrag({ startX: e.clientX - pos.x, startY: e.clientY - pos.y });
         }}
@@ -80,8 +118,7 @@ export default function Window({
         <div className="window-title">{title}</div>
       </div>
 
-
-      <div className="window-content" style={{ height: height ? `calc(${height}px - 35px)` : undefined }}>
+      <div className="window-content" style={contentStyle}>
         {children}
       </div>
     </div>
