@@ -50,8 +50,9 @@ export const vfs: VfsNode = {
         "secret.txt": {
           type: "file",
           locked: true,
-          password: "purdue",
-          content: "Nice try 👀\n\nUse: unlock secret.txt purdue\n",
+          password: "safepassword",
+          content: "Nice try \n\nUse: unlock secret.txt [password]\n",
+          openType: "congrats",
         },
       },
     },
@@ -129,7 +130,6 @@ export const cat = (root: VfsNode, cwd: string, target?: string): CatOk | VfsErr
   return { ok: true, content: node.content ?? "" };
 };
 
-// ✅ THIS is the missing export your crash complains about
 export const unlock = (
   root: VfsNode,
   cwd: string,

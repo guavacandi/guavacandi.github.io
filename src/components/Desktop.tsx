@@ -3,6 +3,7 @@ import DesktopIcon from "./DesktopIcon";
 import Window from "./Window";
 import Popups from "./Popups";
 import { vfs } from "../fs/vfs";
+import CongratsWindow from "./windows/CongratsWindow";
 import SnakeWindow from "./windows/SnakeWindow";
 import ResumeWindow from "./windows/ResumeWindow";
 import CalculatorWindow from "./windows/CalculatorWindow";
@@ -39,6 +40,7 @@ export default function Desktop() {
     trash: false,
     trashcode: false,
     snake: false,
+    congrats: false
   });
 
   const [z, setZ] = useState<ZMap>({
@@ -52,6 +54,7 @@ export default function Desktop() {
     trash: 17,
     trashcode: 18,
     snake: 19,
+    congrats: 20,
   });
 
   useEffect(() => {
@@ -116,6 +119,8 @@ export default function Desktop() {
     }, 0);
   }, []);
 
+  
+  
   return (
     <div className="system7">
       <MenuBar
@@ -193,6 +198,16 @@ export default function Desktop() {
 />
 
         </Window>
+        {open.congrats && (
+  <CongratsWindow
+    id="congrats"
+    isOpen={open.congrats}
+    zIndex={z.congrats}
+    onClose={() => closeWindow("congrats")}
+    onFocus={() => bringToFront("congrats")}
+  />
+)}
+
         <Window
   id="trash-window"
   className="finder-window"

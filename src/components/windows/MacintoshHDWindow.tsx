@@ -91,7 +91,11 @@ export default function MacintoshHDWindow({
       openWindow("trashcode");
       return;
     }
-
+    if (!child.locked && child.openType === "congrats") {
+      openWindow("congrats");
+      return;
+    }
+    
     if (child.locked) {
       setUnlockOpen(true);
     }

@@ -8,7 +8,8 @@ export type WindowId =
   | "resume"
   | "trash"
   | "trashcode"
-  | "snake";
+  | "snake"
+  | "congrats";
 
 export type TerminalCommandResult =
   | { type: "text"; value: string }
@@ -26,7 +27,7 @@ export type TerminalCommandContext = {
   nowString: () => string;
 };
 
-export type VfsOpenType = "resume" | "trashcode" | "snake";
+export type VfsOpenType = "resume" | "trashcode" | "snake" | "congrats";
 
 export type VfsNode =
   | {
