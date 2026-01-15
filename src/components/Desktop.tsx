@@ -239,8 +239,8 @@ export default function Desktop() {
   isOpen={open.snake}
   zIndex={z.snake}
   onFocus={() => bringToFront("snake")}
-  width={620}
-  height={680}
+  width={420}
+  height={480}
   onClose={() => {
     closeWindow("snake");
     setTimeout(() => window.dispatchEvent(new Event("focus-terminal")), 0);
